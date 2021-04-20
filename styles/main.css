@@ -129,5 +129,23 @@ table {
 }
 
 /*Above is css reset.*/
-
-
+body{
+	display: flex;
+	flex-flow: column nowrap;
+	align-items: center;
+	justify-content: center;
+}
+#container {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	grid-template-rows: 1fr 1fr 1fr;
+	width: 600px;
+	height: 600px;
+	border: 3px black solid;
+}
+.square{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px gray solid;
+}

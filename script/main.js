@@ -28,12 +28,13 @@ function checkFreeSpace(freeSpaces, index) {
 const gameControllerPvP = () => {
 	let sign = "X";
 	let result = "continue";
+	displayAnnouncer(result, sign);
 	const game = gameBoard();
 	const boards = document.querySelectorAll(".square");
 	boards.forEach((board) => {
 		board.addEventListener("click", function () {
-			if (checkFreeSpace(game.freeSpaces(), board.id)) {
-				if (result === "continue") {
+			if (result === "continue") {
+				if (game.board[board.id] === "") {
 					game.setBoard(board.id, sign);
 					if (sign === "X") {
 						sign = "O";
@@ -41,21 +42,22 @@ const gameControllerPvP = () => {
 						sign = "X";
 					}
 					result = gameResultController(game.board, game.freeSpaces());
-					displayController(game, sign, result);
+					displayController(game);
+					displayAnnouncer(result, sign);
 				}
 			}
 		});
 	});
 };
 
-function displayController(game, sign, result) {
+//Display game board
+function displayController(game) {
 	const imageX = document.createElement("img");
 	imageX.src = "../styles/X_icon.png";
 	imageX.style.width = "75%";
 	const imageO = document.createElement("img");
 	imageO.src = "../styles/O_icon.png";
 	imageO.style.width = "75%";
-	//Display game board
 	for (let i = 0; i < 9; i++) {
 		const box = document.getElementById(`${i}`);
 		if (!box.firstChild) {
@@ -66,24 +68,31 @@ function displayController(game, sign, result) {
 			}
 		}
 	}
-	//Display announcer
-	const announcer = document.querySelector("#announcer");
-	if (result == "continue") {
-		if (sign === "X") {
-			announcer.innerText = "This is X's turn";
-		} else {
-			announcer.innerText = "This is 0's turn";
-		}
-	} else if (result === "X") {
-		announcer.innerText = "Player X win";
-	} else if (result === "O") {
-		announcer.innerText = "Player O win";
-	} else {
-		announcer.innerText = "Draw!";
-	}
+}
+
+/**
+ * 
 	console.log(game.board);
 	console.log(game.freeSpaces().length);
 	console.log(result);
+ */
+
+//Display announcer
+function displayAnnouncer(result, sign) {
+	const announcer = document.querySelector("#announcer");
+	announcer.style.color = "black";
+	if (result == "continue") {
+		announcer.innerText = `This is player ${sign}'s turn`;
+	} else if (result === "X") {
+		announcer.style.color = "red";
+		announcer.innerText = "Player X win";
+	} else if (result === "O") {
+		announcer.style.color = "red";
+		announcer.innerText = "Player O win";
+	} else {
+		announcer.style.color = "yellow";
+		announcer.innerText = "Draw!";
+	}
 }
 
 const clearAndCreate = () => {
@@ -142,14 +151,28 @@ function gameResultController(board, freeSpaces) {
 	return "continue";
 }
 
-const resetBtn = document.querySelector("#resetButton");
-resetBtn.addEventListener("click", function () {
+(function () {
 	const board = clearAndCreate();
-	board.reset();
 	board.create();
 	gameControllerPvP();
-});
-
-const board = clearAndCreate();
-board.create();
-gameControllerPvP();
+	let gameMode = "PvsP";
+	const modeBtn = document.querySelector("#modeButton");
+	modeBtn.addEventListener("click", function () {
+		if (gameMode === "PvsP") {
+			gameMode = "PvsB";
+			modeBtn.innerText = "Player vs Bot";
+		} else if (gameMode === "PvsB") {
+			gameMode = "BvsP";
+			modeBtn.innerText = "Bot vs Player";
+		} else {
+			gameMode = "PvsP";
+			modeBtn.innerText = "Player vs Player";
+		}
+	});
+	const resetBtn = document.querySelector("#resetButton");
+	resetBtn.addEventListener("click", function () {
+		board.reset();
+		board.create();
+		gameControllerPvP();
+	});
+})();

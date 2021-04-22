@@ -129,10 +129,10 @@ function miniMax(game, player, bot, dept, isMax) {
 //Display game board
 function displayController(game) {
 	const imageX = document.createElement("img");
-	imageX.src = "../styles/xIcon.png";
+	imageX.src = "../styles/iconfinder_letter_X_red_1553096.svg";
 	imageX.style.width = "75%";
 	const imageO = document.createElement("img");
-	imageO.src = "../styles/oIcon.png";
+	imageO.src = "../styles/iconfinder_letter_O_blue_1553085.svg";
 	imageO.style.width = "75%";
 	for (let i = 0; i < 9; i++) {
 		const box = document.getElementById(`${i}`);
@@ -156,7 +156,7 @@ function displayAnnouncer(result, sign) {
 		announcer.style.color = "red";
 		announcer.innerText = "Player X win!";
 	} else if (result === "O") {
-		announcer.style.color = "red";
+		announcer.style.color = "darkblue";
 		announcer.innerText = "Player O win!";
 	} else {
 		announcer.style.color = "#ff5733";

@@ -129,10 +129,10 @@ function miniMax(game, player, bot, dept, isMax) {
 //Display game board
 function displayController(game) {
 	const imageX = document.createElement("img");
-	imageX.src = "/styles/xIcon.png";
+	imageX.src = "styles/xIcon.png";
 	imageX.style.width = "75%";
 	const imageO = document.createElement("img");
-	imageO.src = "/styles/oIcon.png";
+	imageO.src = "styles/oIcon.png";
 	imageO.style.width = "75%";
 	for (let i = 0; i < 9; i++) {
 		const box = document.getElementById(`${i}`);

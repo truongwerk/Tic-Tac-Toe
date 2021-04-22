@@ -162,14 +162,16 @@ body {
 	width: 530px;
 }
 .button {
+	width: 12rem;
 	font-size: x-large;
 	font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
 	padding: 1rem;
 	border-radius: 50px;
+	border: 3px gray solid;
 }
 .button:active {
-	background-color: yellow;
-	border: red 2px solid;
+	background-color: lime;
+	border: orangered 3px solid;
 }
 @font-face {
 	font-family: announcer;

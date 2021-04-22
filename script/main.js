@@ -16,15 +16,7 @@ const gameBoard = () => {
 	return { board, setBoard, freeSpaces };
 };
 
-function checkFreeSpace(freeSpaces, index) {
-	for (let i = 0; i < freeSpaces.length; i++) {
-		if (freeSpaces[i] == index) {
-			return true;
-		}
-	}
-	return false;
-}
-
+//Game controller for PvsP
 const gameControllerPvP = () => {
 	let sign = "X";
 	let result = "continue";
@@ -41,7 +33,7 @@ const gameControllerPvP = () => {
 					} else {
 						sign = "X";
 					}
-					result = gameResultController(game.board, game.freeSpaces());
+					result = gameResultController(game);
 					displayController(game);
 					displayAnnouncer(result, sign);
 				}
@@ -49,6 +41,90 @@ const gameControllerPvP = () => {
 		});
 	});
 };
+
+//Game controller for PvsB,BvsP
+const gameControllerPvB = (mode) => {
+	let player, bot;
+	const game = gameBoard();
+	let result = "continue";
+	const boards = document.querySelectorAll(".square");
+	if (mode === "PvsB") {
+		player = "X";
+		bot = "O";
+	} else if (mode === "BvsP") {
+		player = "O";
+		bot = "X";
+		game.setBoard(Math.ceil(Math.random() * 9 - 1), bot);
+		displayController(game);
+	}
+	displayAnnouncerPvsB(result, player);
+	if (result === "continue") {
+		boards.forEach((board) => {
+			board.addEventListener("click", function () {
+				if (result === "continue") {
+					if (game.board[board.id] === "") {
+						game.setBoard(board.id, player);
+						game.setBoard(findBestMove(game, player, bot), bot);
+						result = gameResultController(game);
+						displayController(game);
+						displayAnnouncerPvsB(result, player);
+					}
+				}
+			});
+		});
+	}
+};
+
+//Find best moves for bot width minimax algorithm
+function findBestMove(game, player, bot) {
+	let bestValue = -10000;
+	let bestMove = -1;
+	for (let i = 0; i < 9; i++) {
+		if (game.board[i] === "") {
+			game.setBoard(i, bot);
+			let moveValue = miniMax(game, player, bot, 0, false);
+			game.setBoard(i, "");
+			if (moveValue > bestValue) {
+				bestValue = moveValue;
+				bestMove = i;
+			}
+		}
+	}
+	return bestMove;
+}
+function miniMax(game, player, bot, dept, isMax) {
+	let result = gameResultController(game);
+	if (result === bot) {
+		return 100;
+	} else if (result === player) {
+		return -100;
+	} else if (result === "draw") {
+		return 0;
+	}
+	if (isMax) {
+		let bestScore = -10000;
+		for (let i = 0; i < 9; i++) {
+			if (game.board[i] === "") {
+				game.setBoard(i, bot);
+				let newScore = miniMax(game, player, bot, dept + 1, !isMax) - dept;
+				bestScore = Math.max(bestScore, newScore);
+				game.setBoard(i, "");
+			}
+		}
+		return bestScore;
+	} else {
+		let worstScore = 10000;
+		for (let i = 0; i < 9; i++) {
+			if (game.board[i] === "") {
+				game.setBoard(i, player);
+				let newScore = miniMax(game, player, bot, dept + 1, !isMax) + dept;
+				worstScore = Math.min(worstScore, newScore);
+				game.setBoard(i, "");
+			}
+		}
+		return worstScore;
+	}
+}
 
 //Display game board
 function displayController(game) {
@@ -70,14 +146,7 @@ function displayController(game) {
 	}
 }
 
-/**
- * 
-	console.log(game.board);
-	console.log(game.freeSpaces().length);
-	console.log(result);
- */
-
-//Display announcer
+//Display announcer for pvp and pvB
 function displayAnnouncer(result, sign) {
 	const announcer = document.querySelector("#announcer");
 	announcer.style.color = "black";
@@ -85,19 +154,35 @@ function displayAnnouncer(result, sign) {
 		announcer.innerText = `This is player ${sign}'s turn`;
 	} else if (result === "X") {
 		announcer.style.color = "red";
-		announcer.innerText = "Player X win";
+		announcer.innerText = "Player X win!";
 	} else if (result === "O") {
 		announcer.style.color = "red";
-		announcer.innerText = "Player O win";
+		announcer.innerText = "Player O win!";
 	} else {
-		announcer.style.color = "yellow";
+		announcer.style.color = "#ff5733";
 		announcer.innerText = "Draw!";
+	}
+}
+function displayAnnouncerPvsB(result, player) {
+	const announcer = document.querySelector("#announcer");
+	announcer.style.color = "black";
+	if (result == "continue") {
+		announcer.innerText = `Your turn:`;
+	} else if (result === player) {
+		announcer.style.color = "green";
+		announcer.innerText = "You win!";
+	} else if (result === "draw") {
+		announcer.style.color = "#ff5733";
+		announcer.innerText = "Draw!";
+	} else {
+		announcer.style.color = "red";
+		announcer.innerText = "You lose!";
 	}
 }
 
 const clearAndCreate = () => {
 	const container = document.querySelector("#container");
-	const reset = () => {
+	const clear = () => {
 		while (container.firstChild) {
 			container.removeChild(container.firstChild);
 		}
@@ -110,42 +195,51 @@ const clearAndCreate = () => {
 			container.appendChild(index);
 		}
 	};
-	return { reset, create };
+	return { clear, create };
 };
 
 //Stop game and decide game result
-function gameResultController(board, freeSpaces) {
+function gameResultController(game) {
 	for (let i = 0; i <= 7; i += 3) {
-		if (board[i] === board[i + 1] && board[i] === board[i + 2]) {
-			if (board[i] === "X") {
+		if (
+			game.board[i] === game.board[i + 1] &&
+			game.board[i] === game.board[i + 2]
+		) {
+			if (game.board[i] === "X") {
 				return "X";
-			} else if (board[i] === "O") {
+			} else if (game.board[i] === "O") {
 				return "O";
 			}
 		}
 	}
 	for (let j = 0; j <= 2; j++) {
-		if (board[j] === board[j + 3] && board[j] === board[j + 6]) {
-			if (board[j] === "X") {
+		if (
+			game.board[j] === game.board[j + 3] &&
+			game.board[j] === game.board[j + 6]
+		) {
+			if (game.board[j] === "X") {
 				return "X";
-			} else if (board[j] === "O") {
+			} else if (game.board[j] === "O") {
 				return "O";
 			}
 		}
 	}
-	if (board[0] === board[4] && board[0] === board[8]) {
-		if (board[0] === "X") {
+	if (game.board[0] === game.board[4] && game.board[0] === game.board[8]) {
+		if (game.board[0] === "X") {
 			return "X";
-		} else if (board[0] === "O") {
+		} else if (game.board[0] === "O") {
 			return "O";
 		}
-	} else if (board[2] === board[4] && board[2] === board[6]) {
-		if (board[2] === "X") {
+	} else if (
+		game.board[2] === game.board[4] &&
+		game.board[2] === game.board[6]
+	) {
+		if (game.board[2] === "X") {
 			return "X";
-		} else if (board[2] === "O") {
+		} else if (game.board[2] === "O") {
 			return "O";
 		}
-	} else if (freeSpaces.length == 0) {
+	} else if (game.freeSpaces().length == 0) {
 		return "draw";
 	}
 	return "continue";
@@ -153,26 +247,28 @@ function gameResultController(board, freeSpaces) {
 
 (function () {
 	const board = clearAndCreate();
-	board.create();
-	gameControllerPvP();
-	let gameMode = "PvsP";
-	const modeBtn = document.querySelector("#modeButton");
-	modeBtn.addEventListener("click", function () {
-		if (gameMode === "PvsP") {
-			gameMode = "PvsB";
-			modeBtn.innerText = "Player vs Bot";
-		} else if (gameMode === "PvsB") {
-			gameMode = "BvsP";
-			modeBtn.innerText = "Bot vs Player";
-		} else {
-			gameMode = "PvsP";
-			modeBtn.innerText = "Player vs Player";
-		}
+	const modeButton = document.querySelector("#chooseMode");
+	let gameMode = modeButton.value;
+	chooseMode(gameMode);
+	modeButton.addEventListener("change", function () {
+		gameMode = modeButton.value;
+		chooseMode(gameMode);
 	});
 	const resetBtn = document.querySelector("#resetButton");
 	resetBtn.addEventListener("click", function () {
-		board.reset();
-		board.create();
-		gameControllerPvP();
+		chooseMode(gameMode);
 	});
+	function chooseMode(gameMode) {
+		board.clear();
+		board.create();
+		if (gameMode === "PvsP") {
+			gameControllerPvP();
+		}
+		if (gameMode === "PvsB") {
+			gameControllerPvB("PvsB");
+		}
+		if (gameMode === "BvsP") {
+			gameControllerPvB("BvsP");
+		}
+	}
 })();

@@ -11,8 +11,12 @@
 	<body>
 		<h1 id="title">Tic-Tac-Toe</h1>
 		<div id="controlPanel">
-			<button id="modeButton" class="button">Player vs Player</button
-			><button id="resetButton" class="button">Reset</button>
+			<select id="chooseMode" class="button">
+				<option value="PvsP">Player vs Player</option>
+				<option value="PvsB">Player vs Bot</option>
+				<option value="BvsP">Bot vs Player</option>
+			</select>
+			<button id="resetButton" class="button">Reset</button>
 		</div>
 		<p id="announcer"></p>
 		<div id="container"></div>
